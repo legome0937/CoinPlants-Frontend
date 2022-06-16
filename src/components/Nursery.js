@@ -5,7 +5,9 @@ import CoinPlantItem from "./CoinPlantItem";
 import { useSelector, useDispatch } from "react-redux";
 
 import { useGetSpendable, useBalanceOf } from "../hooks";
-import { ethers } from "ethers";
+import { useNFT } from "../hooks/useNFT";
+
+import { useMoralisWeb3Api } from "react-moralis";
 
 const coinPlantsStarterData = [
   {
@@ -57,9 +59,26 @@ const Nursery = () => {
   const [stakedSelected, setStakedSelected] = useState([]);
 
   //let amountClaim = useOwnerOf();
-  const availableFundsData = useGetSpendable(address);
-  const tokenWalletData = useBalanceOf(address);
+  const { spendableAmount: availableFundsData } = useGetSpendable(address);
+  const { balanceAmount: tokenWalletData } = useBalanceOf(address);
 
+  // const Web3Api = useMoralisWeb3Api();
+  // const fetchNativeBalance = async () => {
+  //   console.log("sss");
+  //   // get mainnet native balance for the current user
+  //   const balance = await Web3Api.account.getNativeBalance();
+  //   console.log(balance);
+  //   // get BSC native balance for a given address
+  //   const options = {
+  //     chain: "bsc",
+  //     address: "0x3d6c0e79a1239df0039ec16Cc80f7A343b6C530e",
+  //     to_block: "1234",
+  //   };
+  //   const bscBalance = await Web3Api.account.getNativeBalance(options);
+  //   console.log(bscBalance);
+  // };
+
+  useNFT();
   // useEffect(() => {
   //   console.log(tokenWallet, " _______");
   //   if (provider) {
@@ -68,12 +87,32 @@ const Nursery = () => {
   // }, [availableFunds]);
 
   useEffect(() => {
-    // Change to get data from blockchain – replace starter data with blockchain data
-    setCoinPlants(coinPlantsStarterData);
-    // Also set values for token wallet, daily yield, and available funds here
+    if (address) {
+      // Change to get data from blockchain – replace starter data with blockchain data
+      setCoinPlants(coinPlantsStarterData);
+      // Also set values for token wallet, daily yield, and available funds here
+      setDailyYield(10);
+      setAvailableFunds(availableFundsData);
+      setTokenWallet(tokenWalletData);
+
+      console.log("Wallet Connected", availableFundsData);
+
+      // fetchNativeBalance();
+    } else {
+      setCoinPlants([]);
+
+      setDailyYield(0);
+      setAvailableFunds(availableFundsData);
+      setTokenWallet(tokenWalletData);
+      console.log("Connect Wallet", availableFundsData);
+    }
+  }, [address]);
+
+  // Update wallet token ballence & reward token ballence
+  useEffect(() => {
     setAvailableFunds(availableFundsData);
     setTokenWallet(tokenWalletData);
-  }, []);
+  }, [tokenWalletData, availableFundsData]);
 
   useEffect(() => {
     if (coinPlants) {

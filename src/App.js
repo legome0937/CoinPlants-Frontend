@@ -1,6 +1,7 @@
 import "./App.css";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import Home from "./pages/Home";
 import Staking from "./pages/Staking";
 import NotFound from "./pages/NotFound";
@@ -19,6 +20,8 @@ import {
 } from "@usedapp/core";
 import { getDefaultProvider } from "ethers";
 
+import { useMoralis } from "react-moralis";
+
 const config = {
   readOnlyChainId: Rinkeby.chainId,
   readOnlyUrls: {
@@ -27,6 +30,34 @@ const config = {
 };
 
 function App() {
+  //   const { authenticate, isAuthenticated, isAuthenticating, user, account, logout } = useMoralis();
+
+  //   useEffect(() => {
+  //   if (isAuthenticated) {
+  //     // add your logic here
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isAuthenticated]);
+
+  //   const login = async () => {
+  //     if (!isAuthenticated) {
+
+  //       await authenticate({signingMessage: "Log in using Moralis" })
+  //         .then(function (user) {
+  //           console.log("logged in user:", user);
+  //           console.log(user!.get("ethAddress"));
+  //         })
+  //         .catch(function (error) {
+  //           console.log(error);
+  //         });
+  //     }
+  //   }
+
+  //   const logOut = async () => {
+  //     await logout();
+  //     console.log("logged out");
+  //   }
+
   return (
     <div className="App">
       <Provider store={store}>

@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 // Lifted from @Jaden Rose https://stackoverflow.com/questions/53775936/import-image-dynamically-in-react-component
 const useImage = (fileName) => {
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [image, setImage] = useState(null);
@@ -17,16 +16,16 @@ const useImage = (fileName) => {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchImage();
   }, [fileName]);
-  
+
   return {
     loading,
     error,
-    image
+    image,
   };
-}
+};
 
-export default useImage
+export default useImage;
