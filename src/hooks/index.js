@@ -63,3 +63,21 @@ export const useBalanceOf = (address) => {
   let balanceAmount = ethers.utils.formatEther(amount) / 1;
   return { balanceAmount };
 };
+
+// Get all owned NFTs from staking contract
+export const useGetAllOwned = (address) => {
+  const { value, error } =
+    useCall(
+      CoinPlantNurseryContractAddress && {
+        contract: CoinPlantNurseryContract,
+        method: "getAllOwned",
+        args: [address],
+      }
+    ) ?? {};
+  if (error) {
+    console.error("error.message");
+    return undefined;
+  }
+  let stakedNftIds = value?.[0] === undefined ? [] : value?.[0];
+  return stakedNftIds;
+};

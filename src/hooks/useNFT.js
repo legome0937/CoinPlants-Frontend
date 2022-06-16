@@ -1,6 +1,6 @@
-import React from "react";
 import { useMoralisWeb3Api } from "react-moralis";
 import { useState, useEffect } from "react";
+import { BigNumber } from "ethers";
 
 export const useNFT = () => {
   const Web3Api = useMoralisWeb3Api();
@@ -8,17 +8,50 @@ export const useNFT = () => {
   const [nfts, setNfts] = useState([]);
 
   useEffect(() => {
-    console.log("moralis");
+    // Get all user NFTs from contract
     const fetchNFTsForContract = async () => {
       const options = {
-        chain: "polygon",
-        address: "0x75e3e9c92162e62000425c98769965a76c2e387a",
-        token_address: "0x2953399124F0cBB46d2CbACD8A89cF0599974963",
+        chain: "rinkeby",
+        address: "0xc0d0688c4c4ef1d6bF58A51797a19E32aA7d7E6b",
+        token_address: "0x349c16883746Fe80c0bAe92479635037263075EA",
       };
-      const polygonNFTs = await Web3Api.account.getNFTsForContract(options);
-      console.log("polygon", polygonNFTs);
+      const plantNFTs = await Web3Api.account.getNFTsForContract(options);
+      setNfts(plantNFTs.result);
+      console.log("plant", plantNFTs.result);
     };
 
     fetchNFTsForContract();
   }, []);
+
+  return [nfts];
+};
+
+export const useCoinPlantsData = (stakedIds) => {
+  let coinPlantsData = [];
+  // const unstakedNFTs = useNFT();
+
+  // unstakedNFTs.forEach((element) => {
+  //   const nftItem = {
+  //     id: element.id,
+  //     name: "Coin Plant #34",
+  //     img: "coinplant-34.png",
+  //     staked: false,
+  //   };
+
+  //   coinPlantsData.push(nftItem);
+  // });
+
+  stakedIds.forEach((element) => {
+    let one = element / BigNumber.from("1");
+    const nftItem = {
+      id: one,
+      name: "Coin Plant #39",
+      img: "coinplant-39.png",
+      staked: true,
+    };
+
+    coinPlantsData.push(nftItem);
+  });
+
+  return coinPlantsData;
 };

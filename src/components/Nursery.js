@@ -4,10 +4,8 @@ import coinFront from "../assets/coin-front.png";
 import CoinPlantItem from "./CoinPlantItem";
 import { useSelector, useDispatch } from "react-redux";
 
-import { useGetSpendable, useBalanceOf } from "../hooks";
-import { useNFT } from "../hooks/useNFT";
-
-import { useMoralisWeb3Api } from "react-moralis";
+import { useGetSpendable, useBalanceOf, useGetAllOwned } from "../hooks";
+import { useCoinPlantsData } from "../hooks/useNFT";
 
 const coinPlantsStarterData = [
   {
@@ -62,6 +60,15 @@ const Nursery = () => {
   const { spendableAmount: availableFundsData } = useGetSpendable(address);
   const { balanceAmount: tokenWalletData } = useBalanceOf(address);
 
+  //const unstakedNFTs = useNFT();
+
+  const stakedNftIds = useGetAllOwned(address);
+  const coinPlant = useCoinPlantsData(stakedNftIds);
+
+  // const obj = { name: "John", age: 30, city: "New York" };
+  // coinPlantsStarterData.push(obj);
+  // console.log("coin length", coinPlantsStarterData);
+
   // const Web3Api = useMoralisWeb3Api();
   // const fetchNativeBalance = async () => {
   //   console.log("sss");
@@ -78,7 +85,6 @@ const Nursery = () => {
   //   console.log(bscBalance);
   // };
 
-  useNFT();
   // useEffect(() => {
   //   console.log(tokenWallet, " _______");
   //   if (provider) {
@@ -110,8 +116,13 @@ const Nursery = () => {
 
   // Update wallet token ballence & reward token ballence
   useEffect(() => {
-    setAvailableFunds(availableFundsData);
-    setTokenWallet(tokenWalletData);
+    if (address) {
+      setAvailableFunds(availableFundsData);
+      setTokenWallet(tokenWalletData);
+
+      console.log("Current Rewards Amount: ", stakedNftIds);
+      console.log("sss", coinPlant);
+    }
   }, [tokenWalletData, availableFundsData]);
 
   useEffect(() => {
