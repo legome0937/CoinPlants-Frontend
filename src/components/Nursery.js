@@ -1,54 +1,25 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useEthers } from "@usedapp/core";
 import coinFront from "../assets/coin-front.png";
 import CoinPlantItem from "./CoinPlantItem";
-import { useSelector, useDispatch } from "react-redux";
 
-import { useGetSpendable, useBalanceOf, useGetAllOwned } from "../hooks";
-import { useCoinPlantsData } from "../hooks/useNFT";
-
-const coinPlantsStarterData = [
-  {
-    id: "34",
-    name: "Coin Plant #34",
-    img: "coinplant-34.png",
-    staked: false,
-  },
-  {
-    id: "39",
-    name: "Coin Plant #39",
-    img: "coinplant-39.png",
-    staked: false,
-  },
-  {
-    id: "41",
-    name: "Coin Plant #41",
-    img: "coinplant-41.png",
-    staked: true,
-  },
-  {
-    id: "46",
-    name: "Coin Plant #46",
-    img: "coinplant-46.png",
-    staked: true,
-  },
-  {
-    id: "36",
-    name: "Coin Plant #36",
-    img: "coinplant-36.png",
-    staked: true,
-  },
-];
+import {
+  useGetSpendable,
+  useBalanceOf,
+  useWithdraw,
+  useStake,
+  useUnstake,
+  useGetAllOwned,
+} from "../hooks";
+import { getCoinPlantsData } from "../hooks/useNFT";
 
 const Nursery = () => {
-  const provider = useSelector((state) => state.user.provider);
-  const address = useSelector((state) => state.user.userAddress);
+  const { account } = useEthers();
 
   const [dailyYield, setDailyYield] = useState(10);
-  const [availableFunds, setAvailableFunds] = useState([]);
+  const [availableFunds, setAvailableFunds] = useState([0]);
   const [tokenWallet, setTokenWallet] = useState([]);
-  // const { spendableAmount: availableFunds } = useGetSpendable(address);
-  // const { balanceAmount: tokenWallet } = useBalanceOf(address);
 
   const [coinPlants, setCoinPlants] = useState([]);
   const [unstakedCoinPlants, setUnstakedCoinPlants] = useState([]);
@@ -56,72 +27,86 @@ const Nursery = () => {
   const [unstakedSelected, setUnstakedSelected] = useState([]);
   const [stakedSelected, setStakedSelected] = useState([]);
 
-  //let amountClaim = useOwnerOf();
-  const { spendableAmount: availableFundsData } = useGetSpendable(address);
-  const { balanceAmount: tokenWalletData } = useBalanceOf(address);
+  const { spendableAmount: availableFundsData } = useGetSpendable();
+  const { balanceAmount: tokenWalletData } = useBalanceOf();
 
   //const unstakedNFTs = useNFT();
 
-  const stakedNftIds = useGetAllOwned(address);
-  const coinPlant = useCoinPlantsData(stakedNftIds);
+  const stakedNftIds = useGetAllOwned();
+  const coinPlantsData = getCoinPlantsData(stakedNftIds);
 
-  // const obj = { name: "John", age: 30, city: "New York" };
-  // coinPlantsStarterData.push(obj);
-  // console.log("coin length", coinPlantsStarterData);
+  //console.log(stakedNftIds);
+
+  const { state: withDrawState, send: withDraw } = useWithdraw();
+
+  const { state: stakeState, send: stake } = useStake();
+
+  const { state: unstakeState, send: unstake } = useUnstake();
+
+  const handleClaim = () => {
+    account && withDraw();
+  };
+  const handleStake = () => {
+    account && stake(unstakedCoinPlants);
+  };
+  const handleUnstake = () => {
+    console.log(stakedCoinPlants);
+    //account && unstake(unstakedSelected);
+  };
 
   // const Web3Api = useMoralisWeb3Api();
-  // const fetchNativeBalance = async () => {
-  //   console.log("sss");
-  //   // get mainnet native balance for the current user
-  //   const balance = await Web3Api.account.getNativeBalance();
-  //   console.log(balance);
-  //   // get BSC native balance for a given address
+
+  // const fetchNFTsForContract = async () => {
   //   const options = {
-  //     chain: "bsc",
-  //     address: "0x3d6c0e79a1239df0039ec16Cc80f7A343b6C530e",
-  //     to_block: "1234",
+  //     chain: "rinkeby",
+  //     address: account,
+  //     token_address: "0x349c16883746Fe80c0bAe92479635037263075EA",
   //   };
-  //   const bscBalance = await Web3Api.account.getNativeBalance(options);
-  //   console.log(bscBalance);
+  //   const plantNFTs = await Web3Api.account.getNFTsForContract(options);
+
+  //   console.log("plant", plantNFTs.result);
+
+  //   return plantNFTs.result;
   // };
 
-  // useEffect(() => {
-  //   console.log(tokenWallet, " _______");
-  //   if (provider) {
-  //     console.log(address);
-  //   }
-  // }, [availableFunds]);
+  //Withdraw state
+  useEffect(() => {
+    withDrawState.status === "Exception" &&
+      toast.error(withDrawState.errorMessage);
+
+    withDrawState.status === "Success" && toast.info("Claim Success");
+  }, [withDrawState]);
 
   useEffect(() => {
-    if (address) {
+    console.log("here");
+    if (account) {
       // Change to get data from blockchain – replace starter data with blockchain data
-      setCoinPlants(coinPlantsStarterData);
+
+      // console.log("coinPlansData", coinPlantsData);
+      console.log("stakedNftIds", stakedNftIds);
+      setCoinPlants(coinPlantsData);
       // Also set values for token wallet, daily yield, and available funds here
       setDailyYield(10);
       setAvailableFunds(availableFundsData);
       setTokenWallet(tokenWalletData);
 
-      console.log("Wallet Connected", availableFundsData);
+      //console.log("Wallet Connected", coinPlantsData);
 
       // fetchNativeBalance();
-    } else {
-      setCoinPlants([]);
+    } /*  else {
+      // setCoinPlants([]);
 
       setDailyYield(0);
-      setAvailableFunds(availableFundsData);
-      setTokenWallet(tokenWalletData);
-      console.log("Connect Wallet", availableFundsData);
-    }
-  }, [address]);
+      setAvailableFunds(0);
+      setTokenWallet(0);
+    } */
+  }, [stakedNftIds]);
 
   // Update wallet token ballence & reward token ballence
   useEffect(() => {
-    if (address) {
+    if (account) {
       setAvailableFunds(availableFundsData);
       setTokenWallet(tokenWalletData);
-
-      console.log("Current Rewards Amount: ", stakedNftIds);
-      console.log("sss", coinPlant);
     }
   }, [tokenWalletData, availableFundsData]);
 
@@ -223,7 +208,11 @@ const Nursery = () => {
               </p>
             </div>
           </div>
-          <button className="cta cta-nursery" disabled={availableFunds === 0}>
+          <button
+            className="cta cta-nursery"
+            disabled={availableFunds === 0}
+            onClick={(e) => handleClaim()}
+          >
             Claim
           </button>
         </article>
@@ -236,6 +225,7 @@ const Nursery = () => {
             <button
               className="cta cta-nursery"
               disabled={unstakedSelected.length === 0}
+              onClick={(e) => handleStake()}
             >
               Stake Selected
             </button>
@@ -249,6 +239,7 @@ const Nursery = () => {
             <button
               className="cta cta-nursery"
               disabled={stakedSelected.length === 0}
+              onClick={(e) => handleUnstake()}
             >
               Unstake Selected
             </button>

@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { Contract } from "@ethersproject/contracts";
-import { useCall, useContractFunction } from "@usedapp/core";
+import { useCall, useEthers, useContractFunction } from "@usedapp/core";
 
 import CoinPlantNurseryContractABI from "../ABI/CoinPlantNursery.json";
 import PollenContractABI from "../ABI/Pollen.json";
@@ -26,13 +26,14 @@ const PollenContract = new Contract(
 );
 
 // Get spendable pollen tokens from staking contract
-export const useGetSpendable = (address) => {
+export const useGetSpendable = () => {
+  const { account } = useEthers();
   const { value, error } =
     useCall(
-      CoinPlantNurseryContractAddress && {
+      account && {
         contract: CoinPlantNurseryContract,
         method: "getSpendable",
-        args: [address],
+        args: [account],
       }
     ) ?? {};
   if (error) {
@@ -45,14 +46,16 @@ export const useGetSpendable = (address) => {
 };
 
 // Get pollen balance in users wallet
-export const useBalanceOf = (address) => {
+export const useBalanceOf = () => {
+  const { account } = useEthers();
   const { value, error } =
     useCall(
-      PollenContractAddress && {
-        contract: PollenContract,
-        method: "balanceOf",
-        args: [address],
-      }
+      account &&
+        PollenContractAddress && {
+          contract: PollenContract,
+          method: "balanceOf",
+          args: [account],
+        }
     ) ?? {};
   if (error) {
     console.error("error.message");
@@ -64,20 +67,47 @@ export const useBalanceOf = (address) => {
   return { balanceAmount };
 };
 
+// Withdraw pollen from staking contract
+export const useWithdraw = () => {
+  const { state, send, event } = useContractFunction(
+    CoinPlantNurseryContract,
+    "withdraw",
+    {}
+  );
+  return { state, send, event };
+};
+// Withdraw pollen from staking contract
+export const useStake = (stakedItems) => {
+  const { state, send, event } = useContractFunction(
+    CoinPlantNurseryContract,
+    "stake",
+    {}
+  );
+  return { state, send, event };
+};
+// Withdraw pollen from staking contract
+export const useUnstake = (unstakedItems) => {
+  const { state, send, event } = useContractFunction(
+    CoinPlantNurseryContract,
+    "unstake",
+    {}
+  );
+  return { state, send, event };
+};
+
 // Get all owned NFTs from staking contract
-export const useGetAllOwned = (address) => {
+export const useGetAllOwned = (account) => {
   const { value, error } =
     useCall(
-      CoinPlantNurseryContractAddress && {
+      account && {
         contract: CoinPlantNurseryContract,
         method: "getAllOwned",
-        args: [address],
+        args: [account],
       }
     ) ?? {};
-  if (error) {
-    console.error("error.message");
-    return undefined;
-  }
-  let stakedNftIds = value?.[0] === undefined ? [] : value?.[0];
-  return stakedNftIds;
+  // if (error) {
+  //   console.error("error.message");
+  //   return undefined;
+  // }
+  return value?.[0];
 };

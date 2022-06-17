@@ -7,18 +7,20 @@ const useImage = (fileName) => {
   const [image, setImage] = useState(null);
 
   useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const response = await import(`../assets/${fileName}`);
-        setImage(response.default);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setImage(fileName);
+    setLoading(false);
+    // const fetchImage = async () => {
+    //   try {
+    //     const response = await import(`../assets/${fileName}`);
+    //     setImage(response.default);
+    //   } catch (err) {
+    //     setError(err);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
 
-    fetchImage();
+    // fetchImage();
   }, [fileName]);
 
   return {

@@ -2,17 +2,18 @@ import { useMoralisWeb3Api } from "react-moralis";
 import { useState, useEffect } from "react";
 import { BigNumber } from "ethers";
 
-export const useNFT = () => {
+export const useNFT = (account) => {
   const Web3Api = useMoralisWeb3Api();
 
   const [nfts, setNfts] = useState([]);
 
   useEffect(() => {
     // Get all user NFTs from contract
+    console.log("moralis repeat");
     const fetchNFTsForContract = async () => {
       const options = {
         chain: "rinkeby",
-        address: "0xc0d0688c4c4ef1d6bF58A51797a19E32aA7d7E6b",
+        address: account,
         token_address: "0x349c16883746Fe80c0bAe92479635037263075EA",
       };
       const plantNFTs = await Web3Api.account.getNFTsForContract(options);
@@ -20,21 +21,25 @@ export const useNFT = () => {
       console.log("plant", plantNFTs.result);
     };
 
-    fetchNFTsForContract();
+    account && fetchNFTsForContract();
   }, []);
 
-  return [nfts];
+  return nfts;
 };
 
-export const useCoinPlantsData = (stakedIds) => {
+export const getCoinPlantsData = (stakedIds) => {
   let coinPlantsData = [];
   // const unstakedNFTs = useNFT();
 
   // unstakedNFTs.forEach((element) => {
+  //   let nftId = element.token_id;
   //   const nftItem = {
-  //     id: element.id,
-  //     name: "Coin Plant #34",
-  //     img: "coinplant-34.png",
+  //     id: nftId,
+  //     name: "Coin Plant #" + nftId,
+  //     img:
+  //       "https://ipfs.io/ipfs/QmSwL8qPPHsx8XN3sSjfo5tyd6kdxPmGjTCf6UJxrHXeZG/" +
+  //       nftId +
+  //       ".png",
   //     staked: false,
   //   };
 
@@ -42,11 +47,14 @@ export const useCoinPlantsData = (stakedIds) => {
   // });
 
   stakedIds.forEach((element) => {
-    let one = element / BigNumber.from("1");
+    let nftId = element / BigNumber.from("1") + "";
     const nftItem = {
-      id: one,
-      name: "Coin Plant #39",
-      img: "coinplant-39.png",
+      id: nftId,
+      name: "Coin Plant #" + nftId,
+      img:
+        "https://ipfs.io/ipfs/QmSwL8qPPHsx8XN3sSjfo5tyd6kdxPmGjTCf6UJxrHXeZG/" +
+        nftId +
+        ".png",
       staked: true,
     };
 

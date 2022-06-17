@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 import headerLogo from "../assets/header-logo-cropped.png";
@@ -6,6 +6,9 @@ import { ReactComponent as DiscordIcon } from "../assets/discord-icon.svg";
 import { ReactComponent as TwitterIcon } from "../assets/twitter-icon.svg";
 import { ReactComponent as OpenseaIcon } from "../assets/opensea-icon.svg";
 import { ReactComponent as RaritySniperIcon } from "../assets/raritysniper-icon.svg";
+
+//useDapp
+import { useEthers, shortenAddress, Mainnet } from "@usedapp/core";
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
@@ -23,18 +26,27 @@ import WalletLink from "walletlink";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 function Header() {
-
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   const mobileMenuBtn = useRef(null);
 
-  const provider = useSelector((state) => state.user.provider);
+  // const provider = useSelector((state) => state.user.provider);
 
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
+
+  const { account, activate, chainId, deactivate } = useEthers();
+
+  useEffect(() => {
+    deactivate();
+  }, [deactivate]);
 
   const handleConnection = async () => {
+    if (account) {
+      deactivate();
+      return;
+    }
+
     const providerOptions = {
       walletconnect: {
         package: WalletConnectProvider, // required
@@ -91,35 +103,57 @@ function Header() {
       },
     });
 
-    if (provider) {
-      dispatch(userActions.setUserAddress(""));
-      dispatch(userActions.setProvider(""));
-    } else {
-      const connection = await web3Modal.connect();
-      const provider = new ethers.providers.Web3Provider(connection);
-      const signer = provider.getSigner();
-
-      provider.on("disconnect", (error) => {
-        web3Modal.clearCachedProvider();
-        window.location.reload();
-
-        dispatch(userActions.setUserAddress(""));
-        dispatch(userActions.setProvider(""));
+    if (!account) {
+      const web3Modal = new Web3Modal({
+        providerOptions,
       });
-
-      const addy = await signer.getAddress();
-
-      dispatch(userActions.setUserAddress(addy));
-      dispatch(userActions.setProvider(provider));
+      const provider = await web3Modal.connect();
+      await activate(provider);
     }
+
+    // console.log(provider);
+
+    // if (provider) {
+    //   dispatch(userActions.setUserAddress(""));
+    //   dispatch(userActions.setProvider(""));
+    // } else {
+
+    //   const connection = await web3Modal.connect();
+
+    //   console.log(connection);
+
+    //   const provider = new ethers.providers.Web3Provider(connection);
+    //   const signer = provider.getSigner();
+
+    //   provider.on("disconnect", (error) => {
+    //     web3Modal.clearCachedProvider();
+    //     window.location.reload();
+
+    //     dispatch(userActions.setUserAddress(""));
+    //     dispatch(userActions.setProvider(""));
+    //   });
+
+    //   const addy = await signer.getAddress();
+
+    //   dispatch(userActions.setUserAddress(addy));
+    //   dispatch(userActions.setProvider(provider));
+    // }
   };
 
   const NavigationLinks = ({ desktop }) => {
     return (
-      <ul className={desktop ? "desktop-nav-items flex justify-evenly items-center" : null}>
-        <li className={`nav-link font-title text-shadow ${desktop ? null : "mobile-menu-item"}`}>
-          <a 
-            href="https://coconut-laugh-90c.notion.site/Coin-Plants-NFT-Roadmap-d255f7d5b24041a38acf533de7ec03ba" 
+      <ul
+        className={
+          desktop ? "desktop-nav-items flex justify-evenly items-center" : null
+        }
+      >
+        <li
+          className={`nav-link font-title text-shadow ${
+            desktop ? null : "mobile-menu-item"
+          }`}
+        >
+          <a
+            href="https://coconut-laugh-90c.notion.site/Coin-Plants-NFT-Roadmap-d255f7d5b24041a38acf533de7ec03ba"
             rel="noopener noreferrer"
             target="_blank"
           >
@@ -132,7 +166,11 @@ function Header() {
         >
           Rarity
         </li> */}
-        <li className={`nav-link font-title text-shadow ${desktop ? null : "mobile-menu-item"}`}>
+        <li
+          className={`nav-link font-title text-shadow ${
+            desktop ? null : "mobile-menu-item"
+          }`}
+        >
           <Link to="/staking">Staking</Link>
         </li>
         {/* <li 
@@ -149,8 +187,8 @@ function Header() {
           rtl={false}
         />
       </ul>
-    )
-  }
+    );
+  };
 
   const HeaderLogo = () => {
     return (
@@ -160,11 +198,7 @@ function Header() {
         rel="noopener noreferrer"
         aria-label="Home"
       >
-        <img
-          src={headerLogo}
-          className="w-24 z-50 lg:w-44"
-          alt="Logo"
-        />
+        <img src={headerLogo} className="w-24 z-50 lg:w-44" alt="Logo" />
       </a>
     );
   };
@@ -172,11 +206,16 @@ function Header() {
   const SocialLink = ({ svg, link, socialName }) => {
     return (
       <div className="text-center">
-        <a href={link} target="_blank" rel="noopener noreferrer" aria-label={`Link to ${socialName}`}>
-          <div className={
-            `social-icon-container 
-            ${socialName === "Twitter"  ? 'twitter-icon-container' : ''}`
-          }>
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Link to ${socialName}`}
+        >
+          <div
+            className={`social-icon-container 
+            ${socialName === "Twitter" ? "twitter-icon-container" : ""}`}
+          >
             {svg}
           </div>
         </a>
@@ -190,15 +229,15 @@ function Header() {
         className="connect-wallet-btn cta flex justify-center items-center relative w-20 z-50 sm:w-32 sm:text-[10px] cursor-pointer text-[8px] font-[Early GameBoy] text-[white] h-7 px-1 py-0 ml-1 rounded-2xl font-early md:w-52  lg:text-[13px] lg:h-14 lg:px-3 lg:py-3 lg:ml-10  "
         onClick={handleConnection}
       >
-        {provider ? "Disconnect" : " Connect Wallet"}
+        {account ? "Disconnect" : " Connect Wallet"}
       </button>
     );
   };
 
   const handleMobileMenuToggle = () => {
-    setIsNavOpen(prev => !prev);
+    setIsNavOpen((prev) => !prev);
     mobileMenuBtn.current.classList.toggle("mobile-menu-btn-active");
-  }
+  };
 
   const isDesktop = useMediaQuery({ query: "(min-width: 1200px)" });
 
@@ -216,7 +255,7 @@ function Header() {
           </button>
           <NavigationLinks desktop={true} />
         </div>
-        {!isDesktop && isNavOpen ? 
+        {!isDesktop && isNavOpen ? (
           <nav className="mobile-menu">
             <NavigationLinks />
             <div className="mobile-nav-social-links">
@@ -230,21 +269,20 @@ function Header() {
                 link="https://twitter.com/CoinPlantsNFT"
                 socialName="Twitter"
               />
-              <SocialLink 
+              <SocialLink
                 svg={<OpenseaIcon />}
                 link="https://opensea.io/collection/coinplants"
                 socialName="OpenSea"
               />
-               <SocialLink 
+              <SocialLink
                 svg={<RaritySniperIcon />}
                 link="https://raritysniper.com/nft-drops-calendar"
                 socialName="Rarity Sniper"
               />
             </div>
           </nav>
-          : null
-        }
-        
+        ) : null}
+
         {isDesktop ? (
           <div className="rightHeader flex justify-evenly items-center ">
             <HeaderLogo />
@@ -259,7 +297,7 @@ function Header() {
                 link="https://twitter.com/CoinPlantsNFT"
                 socialName="Twitter"
               />
-              <SocialLink 
+              <SocialLink
                 svg={<OpenseaIcon />}
                 link="https://opensea.io/collection/coinplants"
                 socialName="OpenSea"
@@ -280,8 +318,3 @@ function Header() {
 }
 
 export default Header;
-
-
-
- 
- 
